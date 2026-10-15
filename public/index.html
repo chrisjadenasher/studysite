@@ -550,6 +550,26 @@ label.field input, label.field textarea { color: var(--ink); }
 .linkbtn:hover { text-decoration: underline; }
 #ptDetail, #ptTopic { scroll-margin-top: 72px; }
 .pt-headr { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+/* Exam plan sheet */
+.plan-back { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.35); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: grid; place-items: center; padding: 16px; overflow-y: auto; }
+.plan-sheet { width: min(640px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; background: var(--paper); border-radius: 22px; box-shadow: 0 24px 80px rgba(0,0,0,0.3); padding: clamp(20px, 4vw, 32px); display: grid; gap: 18px; }
+.plan-sheet h2 { font-size: clamp(26px, 4vw, 34px); font-weight: 700; letter-spacing: -0.02em; }
+.plan-sheet > p { color: var(--muted); font-size: 16px; }
+.plan-card { background: var(--surface); border-radius: 16px; padding: 18px; display: grid; gap: 14px; }
+.plan-card-head { display: flex; justify-content: space-between; align-items: center; }
+.plan-card-head b { font-size: 15px; }
+.plan-row { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: end; }
+.plan-row .field { flex: 1 1 200px; }
+.plan-subjs { display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+.plan-subjs label { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 12px; background: var(--paper); font-size: 14px; cursor: pointer; }
+.plan-subjs label:has(input:checked) { background: var(--accent-soft); }
+.plan-foot { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; }
+.plan-foot .r { display: flex; gap: 8px; margin-left: auto; }
+.plan-msg { font-size: 14px; color: var(--mark); min-height: 1.2em; }
+.plan-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.plan-list li { display: grid; gap: 1px; padding: 10px 12px; border-radius: 12px; background: var(--paper); font-size: 14px; }
+.plan-list li b { font-size: 14.5px; }
+.plan-list li span { color: var(--muted); font-size: 13px; }
 </style>
 </head>
 <body>
@@ -871,7 +891,7 @@ label.field input, label.field textarea { color: var(--ink); }
       <div class="lede">
         <span class="eyebrow">Exam countdown</span>
         <h2>Your papers, in order, with the days left</h2>
-        <p>Pick your series, level and subjects and the papers are added with their dates from Cambridge's timetable. Your list is saved in this browser only.</p>
+        <p>Pick your series, level and subjects and the papers are added with their dates from Cambridge's timetable. Your list is saved in this browser, and to your account when you're signed in.</p>
       </div>
 
       <div class="panel" id="setupPanel">
@@ -1722,7 +1742,11 @@ label.field input, label.field textarea { color: var(--ink); }
   var SERIES = {
     nov26: { name: "November 2026", note: 'Dates are from Cambridge\'s <a href="' + TT_SRC + '" target="_blank" rel="noopener">November 2026 timetable for administrative zone 4</a>, which covers India, Pakistan, Bangladesh and Sri Lanka. Ask your exams officer to confirm your zone and your entries. Practical papers marked "window" can be held on any day from that date, so your school sets the exact day.', tt: TT_NOV26, start: "2026-09-24" },
     mar27: { name: "March 2027 (India)", note: 'The March 2027 series runs from 3 February to 4 March 2027 (Cambridge key dates). Cambridge has not made the detailed timetable public, so the papers are added without dates. Edit each one to add the date from your school\'s timetable.', tt: null, start: "2027-02-03" },
-    jun27: { name: "June 2027", note: "Cambridge has not made the June 2027 timetable public yet. The papers are added without dates. Edit each one when your school gives you the timetable.", tt: null, start: null }
+    jun27: { name: "June 2027", note: "Cambridge has not made the June 2027 timetable public yet. The papers are added without dates. Edit each one when your school gives you the timetable.", tt: null, start: null },
+    nov27: { name: "November 2027", note: "Cambridge has not published the November 2027 timetable yet. The papers are added without dates. Edit each one when your school gives you the timetable.", tt: null, start: null },
+    mar28: { name: "March 2028 (India)", note: "Cambridge has not published the March 2028 timetable yet. The papers are added without dates. Edit each one when your school gives you the timetable.", tt: null, start: null },
+    jun28: { name: "June 2028", note: "Cambridge has not published the June 2028 timetable yet. The papers are added without dates. Edit each one when your school gives you the timetable.", tt: null, start: null },
+    nov28: { name: "November 2028", note: "Cambridge has not published the November 2028 timetable yet. The papers are added without dates. Edit each one when your school gives you the timetable.", tt: null, start: null }
   };
   var AS_PAPERS = { "9702": "123", "9701": "123", "9700": "123", "9709": "1245", "9231": "134", "9618": "12", "9626": "12" };
   // components set in a series without a timetable: variant 2 papers (March is variant 2 only)
@@ -1741,6 +1765,8 @@ label.field input, label.field textarea { color: var(--ink); }
   if (!Array.isArray(exams)) exams = [];
   exams = exams.filter(function (e) { return !e.sample; });
   var cd = load("examdesk.cdsetup", null) || { series: "nov26", lv: "A", subjects: {} };
+  if (!SERIES[cd.series]) cd.series = "nov26";
+  if (!cd.subjects) cd.subjects = {};
   var editing = null;
 
   var cdSeries = document.getElementById("cdSeries");
@@ -2806,6 +2832,12 @@ label.field input, label.field textarea { color: var(--ink); }
     refresh();
   }
   document.querySelectorAll("select").forEach(enhanceSelect);
+  window.ExamDeskUI = {
+    enhanceSelect: enhanceSelect,
+    subjects: Object.keys(DATA).map(function (c) { return { code: c, name: DATA[c].name, q: DATA[c].q }; }),
+    series: Object.keys(SERIES).map(function (k) { return { key: k, name: SERIES[k].name }; })
+  };
+  try { window.dispatchEvent(new Event("examdesk-ready")); } catch (e) {}
   var startTab = (location.hash || "").replace("#", "") || load("examdesk.tab", "thresholds");
   showTab(startTab);
 })();
