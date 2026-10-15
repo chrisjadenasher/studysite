@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Each student can read and write only their own profile document.
+    match /users/{uid} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['profile', 'data', 'updatedAt'])
+        && request.resource.data.data is map
+        && request.resource.data.data.keys().hasOnly(['examdesk.th2', 'examdesk.pum', 'examdesk.exams', 'examdesk.cdsetup', 'examdesk.theme']);
+    }
+    // Nothing else is readable or writable.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
