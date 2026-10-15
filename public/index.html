@@ -1748,6 +1748,13 @@ label.field input, label.field textarea { color: var(--ink); }
     jun28: { name: "June 2028", note: "Cambridge has not published the June 2028 timetable yet. The papers are added without dates. Edit each one when your school gives you the timetable.", tt: null, start: null },
     nov28: { name: "November 2028", note: "Cambridge has not published the November 2028 timetable yet. The papers are added without dates. Edit each one when your school gives you the timetable.", tt: null, start: null }
   };
+  // Last day each series runs (approximate: end of the series month). After this date the series is hidden as an option.
+  var SERIES_OPEN = [];
+  var SERIES_END = { nov26: "2026-11-30", mar27: "2027-03-31", jun27: "2027-06-30", nov27: "2027-11-30", mar28: "2028-03-31", jun28: "2028-06-30", nov28: "2028-11-30" };
+  (function () {
+    var t = new Date(), today = t.getFullYear() + "-" + ("0" + (t.getMonth() + 1)).slice(-2) + "-" + ("0" + t.getDate()).slice(-2);
+    SERIES_OPEN = Object.keys(SERIES).filter(function (k) { return !(SERIES_END[k] && SERIES_END[k] < today); });
+  })();
   var AS_PAPERS = { "9702": "123", "9701": "123", "9700": "123", "9709": "1245", "9231": "134", "9618": "12", "9626": "12" };
   // components set in a series without a timetable: variant 2 papers (March is variant 2 only)
   function defaultComps(subj) {
@@ -1765,12 +1772,12 @@ label.field input, label.field textarea { color: var(--ink); }
   if (!Array.isArray(exams)) exams = [];
   exams = exams.filter(function (e) { return !e.sample; });
   var cd = load("examdesk.cdsetup", null) || { series: "nov26", lv: "A", subjects: {} };
-  if (!SERIES[cd.series]) cd.series = "nov26";
+  if (SERIES_OPEN.indexOf(cd.series) < 0) cd.series = SERIES_OPEN[0] || Object.keys(SERIES)[Object.keys(SERIES).length - 1];
   if (!cd.subjects) cd.subjects = {};
   var editing = null;
 
   var cdSeries = document.getElementById("cdSeries");
-  Object.keys(SERIES).forEach(function (k) { var o = document.createElement("option"); o.value = k; o.textContent = SERIES[k].name; cdSeries.appendChild(o); });
+  SERIES_OPEN.forEach(function (k) { var o = document.createElement("option"); o.value = k; o.textContent = SERIES[k].name; cdSeries.appendChild(o); });
   cdSeries.addEventListener("change", function () { cd.series = cdSeries.value; renderSetup(); });
   document.querySelectorAll("#cdLevel button").forEach(function (b) {
     b.addEventListener("click", function () { cd.lv = b.getAttribute("data-lv"); renderSetup(); });
@@ -2835,7 +2842,7 @@ label.field input, label.field textarea { color: var(--ink); }
   window.ExamDeskUI = {
     enhanceSelect: enhanceSelect,
     subjects: Object.keys(DATA).map(function (c) { return { code: c, name: DATA[c].name, q: DATA[c].q }; }),
-    series: Object.keys(SERIES).map(function (k) { return { key: k, name: SERIES[k].name }; })
+    series: SERIES_OPEN.map(function (k) { return { key: k, name: SERIES[k].name }; })
   };
   try { window.dispatchEvent(new Event("examdesk-ready")); } catch (e) {}
   var startTab = (location.hash || "").replace("#", "") || load("examdesk.tab", "thresholds");
