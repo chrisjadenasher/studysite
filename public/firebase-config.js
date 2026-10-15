@@ -1,10 +1,10 @@
-// Paste the config from Firebase console → Project settings → Your apps → Web app.
-// These values are not secret: they identify your project. Your data is protected by firestore.rules.
+// Firebase project settings for Exam Desk (studysite-384fc).
+// These values are not secret: they identify the project. Student data is protected by firestore.rules.
 export const firebaseConfig = {
-  apiKey: "PASTE_API_KEY",
-  authDomain: "PASTE_PROJECT_ID.firebaseapp.com",
-  projectId: "PASTE_PROJECT_ID",
-  storageBucket: "PASTE_PROJECT_ID.appspot.com",
-  messagingSenderId: "PASTE_SENDER_ID",
-  appId: "PASTE_APP_ID"
+  apiKey: "AIzaSyBtUZy29TM6pOFAsyd9UBL2iUIpXKXbp4w",
+  authDomain: "studysite-384fc.firebaseapp.com",
+  projectId: "studysite-384fc",
+  storageBucket: "studysite-384fc.firebasestorage.app",
+  messagingSenderId: "661263248228",
+  appId: "1:661263248228:web:d0648a78813235f860e871"
 };
